@@ -1,9 +1,0 @@
-# This file should be encrypted with ansible-vault:
-#   ansible-vault encrypt ansible/group_vars/all/vault.yml
-#
-# To edit after encrypting:
-#   ansible-vault edit ansible/group_vars/all/vault.yml
-
-vault_anthropic_api_key: ""
-vault_openai_api_key: ""
-vault_tavily_api_key: ""
