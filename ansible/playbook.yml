@@ -1,0 +1,111 @@
+---
+- name: Deploy research-pipeline
+  hosts: research
+  become: true
+
+  vars:
+    docker_compose_cmd: docker compose
+
+  tasks:
+
+    # ── System prerequisites ────────────────────────────────────────────────
+
+    - name: Update apt cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install prerequisites
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+          - ufw
+        state: present
+
+    # ── Docker ──────────────────────────────────────────────────────────────
+
+    - name: Check if Docker is already installed
+      command: docker --version
+      register: docker_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Download Docker install script
+      get_url:
+        url: https://get.docker.com
+        dest: /tmp/get-docker.sh
+        mode: "0755"
+      when: docker_check.rc != 0
+
+    - name: Install Docker via convenience script
+      command: sh /tmp/get-docker.sh
+      when: docker_check.rc != 0
+
+    - name: Ensure Docker service is started and enabled
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add ansible user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+    # ── App deployment ───────────────────────────────────────────────────────
+
+    - name: Clone or update repository
+      git:
+        repo: "{{ app_repo }}"
+        dest: "{{ app_dir }}"
+        version: "{{ app_repo_version }}"
+        force: true
+
+    - name: Write .env file
+      template:
+        src: templates/env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: root
+        group: docker
+        mode: "0640"
+
+    - name: Build and start container
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        build: always
+        state: present
+      environment:
+        DOCKER_BUILDKIT: "1"
+
+    # ── Firewall ─────────────────────────────────────────────────────────────
+
+    - name: Allow SSH through firewall
+      ufw:
+        rule: allow
+        name: OpenSSH
+
+    - name: Allow app port through firewall
+      ufw:
+        rule: allow
+        port: "{{ app_port }}"
+        proto: tcp
+
+    - name: Enable firewall
+      ufw:
+        state: enabled
+        policy: deny
+
+    # ── Verify ───────────────────────────────────────────────────────────────
+
+    - name: Wait for app to become available
+      wait_for:
+        port: "{{ app_port }}"
+        host: 0.0.0.0
+        timeout: 60
+
+    - name: Print access URL
+      debug:
+        msg: "Research pipeline is running at http://{{ ansible_host | default(inventory_hostname) }}:{{ app_port }}"

@@ -1,0 +1,9 @@
+app_dir: /opt/research-pipeline
+app_repo: https://github.com/Pickalilly/research-pipeline.git
+app_repo_version: main
+app_port: 8080
+
+# API keys — set real values in vault.yml, not here
+anthropic_api_key: "{{ vault_anthropic_api_key }}"
+openai_api_key: "{{ vault_openai_api_key }}"
+tavily_api_key: "{{ vault_tavily_api_key }}"
