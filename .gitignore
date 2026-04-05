@@ -1,0 +1,23 @@
+# Environment
+.env
+*.env
+
+# Topics output (generated content)
+topics/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# OS
+.DS_Store
