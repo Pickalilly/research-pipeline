@@ -1,0 +1,6 @@
+nicegui>=1.4
+litellm>=1.0
+tavily-python
+httpx
+beautifulsoup4
+tomli; python_version < "3.11"

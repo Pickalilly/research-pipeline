@@ -1,0 +1,9 @@
+services:
+  research:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - ./topics:/app/topics
+    restart: unless-stopped

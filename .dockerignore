@@ -1,0 +1,9 @@
+.env
+topics/
+__pycache__/
+*.pyc
+.pytest_cache/
+tests/
+.claude/
+*.md
+!requirements.txt
